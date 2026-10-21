@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>the_baton_diary</title>
+  <!-- Google Fonts: Jost (Futura style) & Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            futura: ['Jost', 'Futura', '-apple-system', 'sans-serif'],
+            sans: ['Noto Sans KR', 'Jost', '-apple-system', 'sans-serif']
+          },
+          colors: {
+            inkBlack: '#1C1B1A',
+            inkMuted: '#66625B',
+            inkLight: '#99948C'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    body {
+      background-color: #F6F6F8;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-x: hidden;
+      font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+    }
+
+    /* Clean Pure White Paper Spread */
+    .clean-spread {
+      background-color: #FFFFFF;
+      box-shadow: 
+        0 4px 20px -2px rgba(0, 0, 0, 0.05),
+        0 1px 3px rgba(0, 0, 0, 0.03);
+      border: 1px solid #ECECEC;
+    }
+
+    /* Minimal Textarea inside Column: Fills the entire right area */
+    .spread-input {
+      background: transparent;
+      line-height: 18px;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      height: 100%;
+      color: #212121;
+      font-size: 11px;
+      padding: 0;
+      margin: 0;
+      font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+    }
+    .spread-input:focus {
+      outline: none;
+    }
+
+    /* Focus Zoom Writing Textarea with 5 lines spacing */
+    .zoom-textarea {
+      background: transparent;
+      line-height: 34px;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      color: #1F1F1F;
+      font-size: 14px;
+      padding: 0;
+      margin: 0;
+      height: 170px;
+      min-height: 170px;
+      max-height: 170px;
+      background-image: linear-gradient(to bottom, transparent 33px, #ECE8DF 34px);
+      background-size: 100% 34px;
+      background-repeat: repeat-y;
+      font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+    }
+    .zoom-textarea:focus {
+      outline: none;
+    }
+
+    /* Review Box Textarea */
+    .review-textarea {
+      background: transparent;
+      line-height: 20px;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      color: #212121;
+      font-size: 11.5px;
+      padding: 0;
+      font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+    }
+
+    /* Tall Rectangle Calendar Cells */
+    .cal-tall-card {
+      height: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 6px;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-2 sm:p-4 text-inkBlack">
+
+  <!-- TOP HEADER TOOLBAR: Minimalist & Clean (No app name display) -->
+  <header class="w-full max-w-[1100px] flex items-center justify-between mb-2.5 px-1 text-xs font-futura shrink-0">
+    
+    <!-- Top Left: Minimal Calendar Icon Button & Save status only -->
+    <div class="flex items-center gap-2">
+      <button id="btnCalendarToggle" title="캘린더 열기" class="p-1.5 rounded-md hover:bg-stone-200/60 text-inkBlack transition flex items-center justify-center">
+        <!-- Minimal Calendar Icon -->
+        <svg class="w-4 h-4 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke-width="2"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke-width="2"/>
+          <line x1="3" y1="10" x2="21" y2="10" stroke-width="1.6"/>
+        </svg>
+      </button>
+      <span id="saveStatus" class="text-[10.5px] text-emerald-700 font-sans opacity-0 transition-opacity">저장됨</span>
+    </div>
+
+    <!-- Top Center: Current Page Dates & Bolder Darker Chevron Arrow Controls -->
+    <div class="flex items-center gap-2.5 font-futura tracking-tight">
+      <button id="btnPrevPage" title="이전 페이지" class="p-1.5 rounded-md hover:bg-stone-200/70 text-stone-950 transition flex items-center justify-center">
+        <svg class="w-4 h-4 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="text-center select-none min-w-[140px]">
+        <span id="pageTitleDisplay" class="font-bold text-xs uppercase text-stone-950 tracking-wider">OCT 21 — OCT 22</span>
+        <span class="text-stone-300 mx-1 font-normal">•</span>
+        <span id="pageIndexDisplay" class="text-[11px] text-stone-500 font-normal">Page 148 / 183</span>
+      </div>
+      <button id="btnNextPage" title="다음 페이지" class="p-1.5 rounded-md hover:bg-stone-200/70 text-stone-950 transition flex items-center justify-center">
+        <svg class="w-4 h-4 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Top Right: today Button & Backup Modal -->
+    <div class="flex items-center gap-1.5">
+      <button id="btnToday" class="px-2.5 py-1 rounded-md text-stone-800 hover:text-stone-950 hover:bg-stone-200/60 font-medium text-xs lowercase transition">
+        today
+      </button>
+      <button id="btnBackup" title="백업 및 다운로드" class="p-1.5 rounded-md hover:bg-stone-200/60 text-stone-700 transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN DIARY: FULLY PROPORTIONAL SPREAD (5개년 행 균등 분배) -->
+  <main class="w-full max-w-[1100px] flex-1 flex flex-col items-center min-h-0">
+    <div class="w-full h-full flex flex-col">
+      <div id="spreadContainer" class="clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[580px] sm:min-h-[640px]">
+        <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- PHOTO LIGHTBOX MODAL (사진 크게 보기 팝업 - 빈 공간 터치 시 즉시 닫힘) -->
+  <div id="photoLightboxModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden cursor-pointer">
+    <div class="relative max-w-sm sm:max-w-md max-h-[85vh] p-2 bg-white rounded-2xl shadow-2xl flex flex-col items-center cursor-default" id="lightboxCard">
+      <img id="lightboxImg" src="" alt="사진 원본 보기" class="max-w-full max-h-[75vh] object-contain rounded-xl" />
+      <div class="mt-2 text-center text-xs text-stone-400 font-sans select-none">
+        바깥 빈 공간을 터치하면 닫힙니다
+      </div>
+    </div>
+  </div>
+
+  <!-- FOCUS ZOOM WRITING MODAL -->
+  <div id="focusZoomModal" class="fixed inset-0 z-50 bg-black/35 backdrop-blur-[2px] flex items-center justify-center p-3 sm:p-4 hidden font-sans cursor-pointer">
+    <div class="bg-white border border-stone-200 rounded-2xl p-5 sm:p-6 w-full max-w-lg shadow-2xl relative flex flex-col max-h-[90vh] cursor-default" id="zoomCard">
+      
+      <!-- Zoom Header -->
+      <div class="flex items-start justify-between pb-3 border-b border-stone-200">
+        <div>
+          <span id="zoomMonthDayText" class="text-xl sm:text-2xl font-futura font-bold text-stone-900 block leading-tight">OCTOBER 21</span>
+          <span id="zoomWeekdayText" class="text-xs font-futura text-stone-500 font-medium tracking-wide">Wednesday</span>
+        </div>
+        <button id="btnCloseZoomModal" class="text-stone-400 hover:text-stone-700 text-xl p-1 transition">✕</button>
+      </div>
+
+      <!-- Year Tabs (Left) & Photo Attach Button (Right) on the same row with NO TAB: label -->
+      <div class="flex items-center justify-between mt-3 pt-1 border-b border-stone-100 pb-2.5 gap-2">
+        <div class="flex items-center gap-1 overflow-x-auto min-w-0" id="zoomYearTabsContainer">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="zoomPhotoSection" class="flex items-center gap-2 shrink-0">
+          <div id="zoomPhotoThumbWrapper" class="hidden flex items-center gap-1.5">
+            <img id="zoomPhotoImg" src="" alt="첨부 사진" class="w-6 h-6 object-cover rounded border border-stone-200 shadow-xs cursor-pointer" title="클릭하여 크게 보기">
+          </div>
+          <button id="btnRemovePhoto" class="text-[11px] text-red-500 hover:text-red-700 hidden font-futura">사진 삭제</button>
+          <label class="cursor-pointer text-stone-700 hover:text-stone-900 flex items-center gap-1 text-[11.5px] px-2.5 py-1 rounded-md bg-stone-100 hover:bg-stone-200 transition font-futura select-none">
+            <svg class="w-3.5 h-3.5 text-stone-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span id="zoomPhotoBtnLabel">사진 첨부</span>
+            <input type="file" id="photoFileInput" accept="image/*" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <!-- Zoom Writing Area: 5 Lines with spacious spacing (line-height: 34px) -->
+      <div class="my-3 overflow-y-auto">
+        <textarea 
+          id="zoomTextarea" 
+          placeholder="" 
+          class="zoom-textarea"
+        ></textarea>
+      </div>
+
+      <!-- Zoom Footer: Status & Done button ('완료') -->
+      <div class="pt-3 border-t border-stone-200 flex items-center justify-between font-futura">
+        <span id="zoomCharCount" class="text-[11px] text-stone-400">0자 작성됨</span>
+        <button id="btnDoneZoom" class="px-5 py-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-medium text-xs tracking-wider transition active:scale-95">
+          완료
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP CALENDAR MODAL (긴 네모 카드 + 연속 날짜 연결 블록 + 일반 블록 2px 간격 분리) -->
+  <div id="calendarModal" class="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] flex items-start justify-center pt-12 px-4 hidden select-none cursor-pointer">
+    <div class="bg-white border border-stone-200 rounded-2xl p-5 w-full max-w-[340px] shadow-2xl relative font-futura cursor-default" id="calCard">
+      
+      <!-- Calendar Header: Month/Year & Pretty SVG Chevron Arrows -->
+      <div class="flex items-center justify-between pb-3 mb-2 border-b border-stone-100">
+        <button id="calPrevMonth" class="p-1.5 rounded-md hover:bg-stone-100 text-stone-800 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <span id="calHeaderTitle" class="font-bold text-xs tracking-wider text-inkBlack">OCTOBER 2026</span>
+        <button id="calNextMonth" class="p-1.5 rounded-md hover:bg-stone-100 text-stone-800 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Days of Week Header -->
+      <div class="grid grid-cols-7 text-center text-[10.5px] text-stone-400 font-semibold mb-1.5">
+        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+      </div>
+
+      <!-- Calendar Days Grid -->
+      <div id="calDaysGrid" class="grid grid-cols-7 gap-y-1.5 text-center text-xs">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKUP & EXPORT MODAL -->
+  <div id="backupModal" class="fixed inset-0 z-50 bg-black/35 backdrop-blur-[2px] flex items-center justify-center p-4 hidden font-sans">
+    <div class="bg-white border border-stone-200 rounded-xl p-5 w-full max-w-sm shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-200">
+        <h3 class="font-bold text-sm text-inkBlack font-futura">다이어리 데이터 백업 / 복원</h3>
+        <button id="btnCloseBackupModal" class="text-stone-400 hover:text-stone-700 text-lg p-1">✕</button>
+      </div>
+      <p class="text-xs text-stone-600 mt-2.5 leading-relaxed">
+        작성하신 5년 다이어리 기록 및 첨부 사진은 브라우저에 안전하게 저장됩니다. 백업 파일(.json)을 다운로드하거나 이전 데이터를 복원할 수 있습니다.
+      </p>
+      <div class="mt-4 flex flex-col gap-2 font-futura">
+        <button id="btnExportData" class="w-full py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs rounded-lg font-medium shadow-sm transition">
+          다이어리 데이터 다운로드 (.JSON)
+        </button>
+        <label class="w-full py-2 bg-white hover:bg-stone-50 border border-stone-300 text-inkBlack text-xs rounded-lg font-medium text-center cursor-pointer transition">
+          <span>백업 파일 복원하기</span>
+          <input type="file" id="importFileInput" accept=".json" class="hidden">
+        </label>
+        <button id="btnClearData" class="w-full py-1.5 text-stone-400 hover:text-red-600 text-[11px] text-center transition">
+          다이어리 전체 내용 초기화
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN-PAGE TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 z-50 bg-stone-900/90 text-white text-xs px-3.5 py-2 rounded-full shadow-lg pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-sans">
+    알림 메시지
+  </div>
+
+  <script>
+    // --- 5-YEAR CALENDAR CORE LOGIC (2026 - 2030) ---
+    const YEARS = [2026, 2027, 2028, 2029, 2030];
+    const MONTH_DATA = [
+      { num: 1, full: 'January', short: 'jan', days: 31 },
+      { num: 2, full: 'February', short: 'feb', days: 29 }, // 2028 leap year
+      { num: 3, full: 'March', short: 'mar', days: 31 },
+      { num: 4, full: 'April', short: 'apr', days: 30 },
+      { num: 5, full: 'May', short: 'may', days: 31 },
+      { num: 6, full: 'June', short: 'jun', days: 30 },
+      { num: 7, full: 'July', short: 'jul', days: 31 },
+      { num: 8, full: 'August', short: 'aug', days: 31 },
+      { num: 9, full: 'September', short: 'sep', days: 30 },
+      { num: 10, full: 'October', short: 'oct', days: 31 },
+      { num: 11, full: 'November', short: 'nov', days: 30 },
+      { num: 12, full: 'December', short: 'dec', days: 31 }
+    ];
+
+    function getDayOfWeek(year, monthNum, day) {
+      if (monthNum === 2 && day === 29 && year !== 2028) {
+        return '-';
+      }
+      const d = new Date(year, monthNum - 1, day);
+      return d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+    }
+
+    // Auto Responsive Columns: 2 for mobile/iPhone, 3 for tablet, 4 for desktop, 5 for wide screens
+    function getAutoColumns() {
+      const w = window.innerWidth;
+      if (w < 600) return 2;   // Mobile / iPhone: 2 columns
+      if (w < 900) return 3;   // Tablet: 3 columns
+      if (w < 1200) return 4;  // Desktop: 4 columns
+      return 5;                // Wide screen: 5 columns
+    }
+    let columnsPerPage = getAutoColumns();
+
+    // Structure: Build Pages with Monthly Isolation & Standalone Monthly Review Page
+    let PAGES = [];
+    function rebuildPages() {
+      PAGES = [];
+      MONTH_DATA.forEach(m => {
+        const m_days = [];
+        for (let d = 1; d <= m.days; d++) {
+          m_days.push({
+            type: 'day',
+            monthNum: m.num,
+            monthFull: m.full,
+            monthShort: m.short,
+            day: d
+          });
+        }
+
+        // Slice daily pages by columnsPerPage
+        for (let i = 0; i < m_days.length; i += columnsPerPage) {
+          const chunk = m_days.slice(i, i + columnsPerPage);
+          PAGES.push({
+            pageType: 'daily',
+            items: chunk,
+            monthNum: m.num,
+            monthFull: m.full,
+            monthShort: m.short
+          });
+        }
+
+        // Dedicated Monthly Review Page for each month!
+        PAGES.push({
+          pageType: 'review',
+          monthNum: m.num,
+          monthFull: m.full,
+          monthShort: m.short
+        });
+      });
+    }
+
+    // Today is October 21, 2026
+    const TODAY_YEAR = 2026;
+    const TODAY_MONTH = 10;
+    const TODAY_DAY = 21;
+
+    let currentPageIndex = 0;
+
+    // Calendar popup state
+    let calViewMonth = TODAY_MONTH;
+    let calViewYear = TODAY_YEAR;
+
+    // Focus Zoom Active State
+    let activeZoomItem = null;
+    let activeZoomYear = TODAY_YEAR;
+
+    // Storage Key
+    const STORAGE_KEY = 'FIVE_YEAR_DIARY_DATA_V6';
+    let diaryData = {
+      entries: {}, // key: `${month}-${day}-${year}` => text, or `${month}-review-${year}` => text
+      photos: {}   // key: `${month}-${day}-${year}` => base64 photo data URL
+    };
+
+    function loadStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          diaryData = JSON.parse(raw);
+          if (!diaryData.entries) diaryData.entries = {};
+          if (!diaryData.photos) diaryData.photos = {};
+        }
+      } catch (e) {
+        console.warn('Storage read error:', e);
+      }
+    }
+
+    let saveTimeout = null;
+    function triggerSave() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(diaryData));
+        showSaveBadge();
+      } catch (e) {
+        console.warn('Storage save error:', e);
+      }
+    }
+
+    function showSaveBadge() {
+      const badge = document.getElementById('saveStatus');
+      if (badge) {
+        badge.style.opacity = '1';
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          badge.style.opacity = '0';
+        }, 1200);
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.opacity = '1';
+      t.style.transform = 'translateY(0)';
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transform = 'translateY(12px)';
+      }, 2000);
+    }
+
+    function hasEntry(monthNum, dayNum) {
+      return YEARS.some(y => {
+        const key = `${monthNum}-${dayNum}-${y}`;
+        const hasText = Boolean(diaryData.entries[key] && diaryData.entries[key].trim().length > 0);
+        const hasPhoto = Boolean(diaryData.photos[key]);
+        return hasText || hasPhoto;
+      });
+    }
+
+    // Lightbox image viewer
+    function openLightbox(imgSrc) {
+      const modal = document.getElementById('photoLightboxModal');
+      const img = document.getElementById('lightboxImg');
+      if (modal && img) {
+        img.src = imgSrc;
+        modal.classList.remove('hidden');
+      }
+    }
+    function closeLightbox() {
+      const modal = document.getElementById('photoLightboxModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // Helper: Build a daily column
+    // Left: Year -> below Weekday -> below Photo slot
+    // Right: Entire remaining width for text!
+    function renderDailyColumn(item, colIndex, isLast, widthPercent) {
+      if (!item) return `<div style="width: ${widthPercent}%;"></div>`;
+
+      let yearRowsHtml = '';
+      YEARS.forEach((year, yIdx) => {
+        const weekday = getDayOfWeek(year, item.monthNum, item.day);
+        const entryKey = `${item.monthNum}-${item.day}-${year}`;
+        const entryVal = diaryData.entries[entryKey] || '';
+        const photoVal = diaryData.photos[entryKey];
+
+        yearRowsHtml += `
+          <div 
+            data-zoom-col="${colIndex}"
+            data-zoom-year="${year}"
+            class="flex-1 flex flex-row items-stretch py-2 sm:py-2.5 px-2 hover:bg-stone-50/70 transition cursor-pointer min-h-0 ${yIdx < YEARS.length - 1 ? 'border-b border-[#ECECEC]' : ''}"
+            title="클릭하여 확대 작성"
+          >
+            <!-- Left Column: Year on top, Weekday underneath (left-aligned), Photo box below -->
+            <div class="w-[36px] sm:w-[40px] shrink-0 flex flex-col items-start justify-start select-none mr-2 pt-[1px]">
+              <!-- Year -->
+              <span class="text-[11px] font-futura font-bold text-stone-900 tracking-tight leading-none">${year}</span>
+              <!-- Weekday directly underneath, aligned to the left of the Year -->
+              <span class="text-[9.5px] font-futura text-stone-400 lowercase leading-none mt-1">${weekday}</span>
+              
+              <!-- Small photo slot below Year + Weekday -->
+              ${photoVal ? `
+                <div class="mt-2 shrink-0 cursor-pointer" data-lightbox-photo="${photoVal}">
+                  <img src="${photoVal}" alt="사진" class="w-7 h-7 sm:w-8 sm:h-8 object-cover rounded border border-stone-200 shadow-xs hover:opacity-85 transition" title="클릭하여 사진 크게 보기" />
+                </div>
+              ` : `
+                <div class="mt-2 w-7 h-7 sm:w-8 sm:h-8"></div>
+              `}
+            </div>
+
+            <!-- Right Column: Text Area filling all remaining space! -->
+            <div class="flex-1 min-w-0 h-full flex flex-col justify-start">
+              <textarea 
+                data-entry-key="${entryKey}"
+                placeholder=""
+                class="spread-input flex-1 w-full h-full pointer-events-none"
+                tabindex="-1"
+              >${entryVal}</textarea>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div style="width: ${widthPercent}%; max-width: ${widthPercent}%;" class="p-3 sm:p-5 flex flex-col justify-between h-full min-w-0 shrink-0 ${!isLast ? 'border-r border-[#EFEFEF]' : ''}">
+          <!-- Header: Day number on left, right-aligned month abbr (oct) -->
+          <div class="flex items-baseline justify-between pb-1.5 mb-1 border-b border-[#E0E0E0] shrink-0">
+            <span class="text-sm font-futura font-bold text-stone-900 leading-none">${item.day}</span>
+            <span class="text-[10px] font-futura text-stone-400 lowercase tracking-wider">${item.monthShort}</span>
+          </div>
+          <!-- 5 Equal Vertical Slices filling 100% of height! -->
+          <div class="flex-1 flex flex-col justify-between h-full min-h-0">
+            ${yearRowsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // Helper: Build the Dedicated Monthly Review Page (예: OCT REVIEW)
+    function renderMonthlyReviewPage(pageObj) {
+      const monthShortUpper = pageObj.monthShort.toUpperCase();
+      
+      // 6 Symmetrical Monochrome Boxes (2026-2030, plus 6th blank box for free writing/photo)
+      const boxesConfig = [
+        { keySuffix: '2026', title: '2026', isYear: true, year: 2026 },
+        { keySuffix: '2027', title: '2027', isYear: true, year: 2027 },
+        { keySuffix: '2028', title: '2028', isYear: true, year: 2028 },
+        { keySuffix: '2029', title: '2029', isYear: true, year: 2029 },
+        { keySuffix: '2030', title: '2030', isYear: true, year: 2030 },
+        { keySuffix: 'memo', title: '', isYear: false, year: 2026 }
+      ];
+
+      let boxesHtml = '';
+      boxesConfig.forEach(box => {
+        const reviewKey = `${pageObj.monthNum}-review-${box.keySuffix}`;
+        const photoKey = `${pageObj.monthNum}-reviewphoto-${box.keySuffix}`;
+        const reviewVal = diaryData.entries[reviewKey] || '';
+        const photoVal = diaryData.photos[photoKey];
+
+        boxesHtml += `
+          <div 
+            data-zoom-review-key="${box.keySuffix}"
+            data-zoom-review-title="${box.isYear ? box.title : ''}"
+            class="flex-1 min-h-[115px] sm:min-h-[125px] bg-white border border-[#EAEAEA] rounded-[6px] p-3 flex flex-col justify-between hover:border-stone-400 transition cursor-pointer shadow-xs"
+            title="클릭하여 작성"
+          >
+            ${box.isYear ? `
+              <!-- Header: Year centered -->
+              <div class="flex items-center justify-center pb-1.5 mb-1.5 border-b border-[#F2F2F2] shrink-0">
+                <span class="text-xs font-futura font-bold text-stone-800 tracking-wider text-center">${box.title}</span>
+              </div>
+            ` : ''}
+            
+            <!-- Box Body: Clean textarea with photo if attached (6th box has NO header and NO line) -->
+            <div class="flex-1 flex gap-2 items-start min-h-0 h-full ${!box.isYear ? 'pt-0.5' : ''}">
+              ${photoVal ? `
+                <div class="shrink-0 pt-0.5 cursor-pointer" data-lightbox-photo="${photoVal}">
+                  <img src="${photoVal}" alt="사진" class="w-8 h-8 object-cover rounded border border-stone-200" />
+                </div>
+              ` : ''}
+              <textarea 
+                data-entry-key="${reviewKey}"
+                placeholder=""
+                class="review-textarea flex-1 pointer-events-none h-full"
+                tabindex="-1"
+              >${reviewVal}</textarea>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="w-full h-full p-4 sm:p-6 flex flex-col justify-between font-futura select-text">
+          <!-- Top Area: Subtle, thin, reduced title on the top right with NO bottom line -->
+          <div class="pb-1 mb-2 flex items-center justify-end shrink-0">
+            <span class="text-[9.5px] font-futura font-light text-stone-300 tracking-[0.2em] uppercase select-none">
+              ${monthShortUpper} REVIEW
+            </span>
+          </div>
+
+          <!-- 6 Symmetrical Monochrome Boxes -->
+          <div class="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4 overflow-y-auto pr-0.5">
+            ${boxesHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // Main Render Function
+    function renderCurrentPage() {
+      const spreadContainer = document.getElementById('spreadContainer');
+      const pageTitleDisplay = document.getElementById('pageTitleDisplay');
+      const pageIndexDisplay = document.getElementById('pageIndexDisplay');
+      if (!spreadContainer) return;
+
+      const page = PAGES[currentPageIndex];
+      if (!page) return;
+
+      if (page.pageType === 'review') {
+        const titleStr = `${page.monthShort.toUpperCase()} REVIEW`;
+        if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
+        if (pageIndexDisplay) pageIndexDisplay.textContent = `Review Page`;
+
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-col overflow-hidden min-h-[580px] sm:min-h-[640px]';
+        spreadContainer.innerHTML = renderMonthlyReviewPage(page);
+
+        wireReviewZoomTriggers(page);
+        wireLightboxTriggers();
+      } else {
+        const items = page.items;
+        const firstDay = items[0].day;
+        const lastDay = items[items.length - 1].day;
+        const mShort = page.monthShort.toUpperCase();
+        const titleStr = `${mShort} ${firstDay} — ${mShort} ${lastDay}`;
+
+        if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
+        if (pageIndexDisplay) pageIndexDisplay.textContent = `Page ${currentPageIndex + 1} / ${PAGES.length}`;
+
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[580px] sm:min-h-[640px]';
+        
+        const widthPercent = (100 / columnsPerPage).toFixed(3);
+        let colsHtml = '';
+        items.forEach((item, idx) => {
+          colsHtml += renderDailyColumn(item, idx, idx === items.length - 1, widthPercent);
+        });
+
+        // If fewer items than columnsPerPage (e.g. 31st alone), fill remaining space with clean void
+        if (items.length < columnsPerPage) {
+          const remainingCols = columnsPerPage - items.length;
+          colsHtml += `<div style="width: ${(remainingCols * widthPercent).toFixed(3)}%;" class="h-full bg-stone-50/20"></div>`;
+        }
+
+        spreadContainer.innerHTML = colsHtml;
+
+        wireDailyZoomTriggers(page);
+        wireLightboxTriggers();
+      }
+    }
+
+    function wireDailyZoomTriggers(page) {
+      const triggers = document.querySelectorAll('[data-zoom-col]');
+      triggers.forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('[data-lightbox-photo]')) return;
+          const colIdx = parseInt(el.getAttribute('data-zoom-col'), 10);
+          const year = parseInt(el.getAttribute('data-zoom-year'), 10);
+          const item = page.items[colIdx];
+          if (item) {
+            openFocusZoom(item, year);
+          }
+        });
+      });
+    }
+
+    function wireLightboxTriggers() {
+      const photoTriggers = document.querySelectorAll('[data-lightbox-photo]');
+      photoTriggers.forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const imgSrc = el.getAttribute('data-lightbox-photo');
+          if (imgSrc) openLightbox(imgSrc);
+        });
+      });
+    }
+
+    function wireReviewZoomTriggers(page) {
+      const triggers = document.querySelectorAll('[data-zoom-review-key]');
+      triggers.forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('[data-lightbox-photo]')) return;
+          const keySuffix = el.getAttribute('data-zoom-review-key');
+          const boxTitle = el.getAttribute('data-zoom-review-title');
+          const reviewItem = {
+            type: 'review_box',
+            monthNum: page.monthNum,
+            monthFull: page.monthFull,
+            monthShort: page.monthShort,
+            keySuffix: keySuffix,
+            title: boxTitle || 'MEMO'
+          };
+          openFocusZoom(reviewItem, keySuffix);
+        });
+      });
+    }
+
+    // --- FOCUS ZOOM WRITING OVERLAY WITH PHOTO ATTACHMENT ---
+    function openFocusZoom(item, tabIdentifier) {
+      activeZoomItem = item;
+
+      const modal = document.getElementById('focusZoomModal');
+      const monthDayText = document.getElementById('zoomMonthDayText');
+      const weekdayText = document.getElementById('zoomWeekdayText');
+      const textarea = document.getElementById('zoomTextarea');
+      const photoSection = document.getElementById('zoomPhotoSection');
+      if (!modal) return;
+
+      const isDay = item.type === 'day';
+      if (isDay) {
+        activeZoomYear = parseInt(tabIdentifier, 10) || TODAY_YEAR;
+        const weekday = getDayOfWeek(activeZoomYear, item.monthNum, item.day);
+        monthDayText.textContent = `${item.monthFull.toUpperCase()} ${item.day}`;
+        weekdayText.textContent = `${activeZoomYear}년 • ${weekday.toUpperCase()}`;
+        if (photoSection) photoSection.classList.remove('hidden');
+        renderDailyZoomTabs();
+        const entryKey = `${item.monthNum}-${item.day}-${activeZoomYear}`;
+        textarea.value = diaryData.entries[entryKey] || '';
+      } else {
+        // Review box
+        activeZoomYear = tabIdentifier;
+        monthDayText.textContent = `${item.monthFull.toUpperCase()} REVIEW`;
+        weekdayText.textContent = item.title ? `${item.title}` : 'MEMO';
+        if (photoSection) photoSection.classList.remove('hidden');
+        renderReviewZoomTabs();
+        const entryKey = `${item.monthNum}-review-${activeZoomYear}`;
+        textarea.value = diaryData.entries[entryKey] || '';
+      }
+
+      updateZoomPhotoDisplay();
+      updateCharCount();
+
+      modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+      }, 50);
+    }
+
+    function renderDailyZoomTabs() {
+      const container = document.getElementById('zoomYearTabsContainer');
+      if (!container || !activeZoomItem) return;
+      container.innerHTML = '';
+
+      YEARS.forEach(y => {
+        const btn = document.createElement('button');
+        const isCurrent = y === activeZoomYear;
+        const entryKey = `${activeZoomItem.monthNum}-${activeZoomItem.day}-${y}`;
+        const hasData = Boolean(diaryData.entries[entryKey]?.trim() || diaryData.photos[entryKey]);
+
+        btn.className = `px-2.5 py-1 rounded text-xs font-futura transition ${isCurrent ? 'bg-stone-900 text-white font-bold' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
+        btn.textContent = y + (hasData && !isCurrent ? ' •' : '');
+
+        btn.addEventListener('click', () => {
+          saveActiveZoomEntry();
+          activeZoomYear = y;
+          const weekday = getDayOfWeek(y, activeZoomItem.monthNum, activeZoomItem.day);
+          document.getElementById('zoomWeekdayText').textContent = `${y}년 • ${weekday.toUpperCase()}`;
+          renderDailyZoomTabs();
+          updateZoomPhotoDisplay();
+          const newKey = `${activeZoomItem.monthNum}-${activeZoomItem.day}-${y}`;
+          document.getElementById('zoomTextarea').value = diaryData.entries[newKey] || '';
+          updateCharCount();
+          document.getElementById('zoomTextarea').focus();
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function renderReviewZoomTabs() {
+      const container = document.getElementById('zoomYearTabsContainer');
+      if (!container || !activeZoomItem) return;
+      container.innerHTML = '';
+
+      const tabs = ['2026', '2027', '2028', '2029', '2030', 'memo'];
+      const labels = ['2026', '2027', '2028', '2029', '2030', 'MEMO'];
+
+      tabs.forEach((tab, idx) => {
+        const btn = document.createElement('button');
+        const isCurrent = tab === activeZoomYear;
+        const entryKey = `${activeZoomItem.monthNum}-review-${tab}`;
+        const photoKey = `${activeZoomItem.monthNum}-reviewphoto-${tab}`;
+        const hasData = Boolean(diaryData.entries[entryKey]?.trim() || diaryData.photos[photoKey]);
+
+        btn.className = `px-2.5 py-1 rounded text-xs font-futura transition ${isCurrent ? 'bg-stone-900 text-white font-bold' : 'bg-stone-100 hover:bg-stone-200 text-stone-700'}`;
+        btn.textContent = labels[idx] + (hasData && !isCurrent ? ' •' : '');
+
+        btn.addEventListener('click', () => {
+          saveActiveZoomEntry();
+          activeZoomYear = tab;
+          document.getElementById('zoomWeekdayText').textContent = labels[idx];
+          renderReviewZoomTabs();
+          updateZoomPhotoDisplay();
+          const newKey = `${activeZoomItem.monthNum}-review-${tab}`;
+          document.getElementById('zoomTextarea').value = diaryData.entries[newKey] || '';
+          updateCharCount();
+          document.getElementById('zoomTextarea').focus();
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function updateZoomPhotoDisplay() {
+      if (!activeZoomItem) return;
+      const isDay = activeZoomItem.type === 'day';
+      const key = isDay ? `${activeZoomItem.monthNum}-${activeZoomItem.day}-${activeZoomYear}` : `${activeZoomItem.monthNum}-reviewphoto-${activeZoomYear}`;
+      const photoData = diaryData.photos[key];
+
+      const btnLabel = document.getElementById('zoomPhotoBtnLabel');
+      const btnRemove = document.getElementById('btnRemovePhoto');
+      const thumbWrapper = document.getElementById('zoomPhotoThumbWrapper');
+      const photoImg = document.getElementById('zoomPhotoImg');
+
+      if (photoData) {
+        if (btnLabel) btnLabel.textContent = '사진 변경';
+        if (btnRemove) btnRemove.classList.remove('hidden');
+        if (thumbWrapper) thumbWrapper.classList.remove('hidden');
+        if (photoImg) photoImg.src = photoData;
+      } else {
+        if (btnLabel) btnLabel.textContent = '사진 첨부';
+        if (btnRemove) btnRemove.classList.add('hidden');
+        if (thumbWrapper) thumbWrapper.classList.add('hidden');
+        if (photoImg) photoImg.src = '';
+      }
+    }
+
+    function saveActiveZoomEntry() {
+      const textarea = document.getElementById('zoomTextarea');
+      if (!textarea || !activeZoomItem) return;
+      const isDay = activeZoomItem.type === 'day';
+      const key = isDay ? `${activeZoomItem.monthNum}-${activeZoomItem.day}-${activeZoomYear}` : `${activeZoomItem.monthNum}-review-${activeZoomYear}`;
+      diaryData.entries[key] = textarea.value;
+      triggerSave();
+    }
+
+    function closeFocusZoom() {
+      saveActiveZoomEntry();
+      const modal = document.getElementById('focusZoomModal');
+      if (modal) modal.classList.add('hidden');
+      renderCurrentPage();
+    }
+
+    function updateCharCount() {
+      const textarea = document.getElementById('zoomTextarea');
+      const charCount = document.getElementById('zoomCharCount');
+      if (textarea && charCount) {
+        charCount.textContent = `${textarea.value.length}자 작성됨`;
+      }
+    }
+
+    function jumpToDate(monthNum, dayNum) {
+      const targetIdx = PAGES.findIndex(p => 
+        p.pageType === 'daily' && p.items.some(item => item.monthNum === monthNum && item.day === dayNum)
+      );
+      if (targetIdx !== -1) {
+        currentPageIndex = targetIdx;
+        renderCurrentPage();
+      }
+    }
+
+    // --- POPUP CALENDAR LOGIC WITH TALL RECTANGLE CARDS & CONNECTED RANGE BLOCKS ---
+    function renderCalendarGrid() {
+      const calHeaderTitle = document.getElementById('calHeaderTitle');
+      const calDaysGrid = document.getElementById('calDaysGrid');
+      if (!calDaysGrid || !calHeaderTitle) return;
+
+      const mObj = MONTH_DATA.find(m => m.num === calViewMonth) || MONTH_DATA[0];
+      calHeaderTitle.textContent = `${mObj.full.toUpperCase()} ${calViewYear}`;
+
+      const firstDayOfWeek = new Date(calViewYear, calViewMonth - 1, 1).getDay();
+      calDaysGrid.innerHTML = '';
+
+      // Blank slots before the 1st
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        const blank = document.createElement('div');
+        blank.className = 'cal-tall-card select-none opacity-0';
+        blank.textContent = '';
+        calDaysGrid.appendChild(blank);
+      }
+
+      // Active days on the current page
+      const activePage = PAGES[currentPageIndex];
+      const activeDays = (activePage && activePage.pageType === 'daily' && activePage.monthNum === calViewMonth)
+        ? activePage.items.map(it => it.day)
+        : [];
+
+      // Day cards 1..days
+      for (let d = 1; d <= mObj.days; d++) {
+        const cell = document.createElement('button');
+        const isActive = activeDays.includes(d);
+        const recorded = hasEntry(calViewMonth, d);
+
+        const colInRow = (firstDayOfWeek + d - 1) % 7;
+        const isRowStart = (colInRow === 0);
+        const isRowEnd = (colInRow === 6);
+
+        let rangeClass = '';
+        if (isActive) {
+          // Connected seamless black band across active days on current page!
+          const connectsLeft = !isRowStart && activeDays.includes(d - 1);
+          const connectsRight = !isRowEnd && activeDays.includes(d + 1);
+
+          const mlClass = connectsLeft ? 'ml-0' : 'ml-[2px]';
+          const mrClass = connectsRight ? 'mr-0' : 'mr-[2px]';
+
+          let roundedClass = '';
+          if (!connectsLeft && !connectsRight) {
+            roundedClass = 'rounded-[7px]';
+          } else if (!connectsLeft && connectsRight) {
+            roundedClass = 'rounded-l-[7px] rounded-r-none';
+          } else if (connectsLeft && !connectsRight) {
+            roundedClass = 'rounded-r-[7px] rounded-l-none';
+          } else {
+            roundedClass = 'rounded-none';
+          }
+
+          rangeClass = `${mlClass} ${mrClass} ${roundedClass} bg-stone-900 text-white font-bold shadow-xs`;
+        } else {
+          // Other calendar blocks: shrunk horizontally by 2px on each side (mx-[2px]) so they don't look connected!
+          rangeClass = 'mx-[2px] rounded-[7px] bg-stone-50/70 hover:bg-stone-100 text-stone-700 border border-stone-100/60';
+        }
+
+        cell.className = `cal-tall-card w-full ${rangeClass} transition active:scale-95`;
+        
+        let contentHtml = `<span class="leading-none text-[11.5px] font-medium">${d}</span>`;
+        if (recorded) {
+          contentHtml += `<span class="w-1 h-1 rounded-full ${isActive ? 'bg-white' : 'bg-stone-900'} mt-2"></span>`;
+        } else {
+          contentHtml += `<span class="w-1 h-1 mt-2"></span>`;
+        }
+
+        cell.innerHTML = contentHtml;
+        cell.addEventListener('click', (e) => {
+          e.stopPropagation();
+          jumpToDate(calViewMonth, d);
+          closeCalendarModal();
+          showToast(`${calViewMonth}월 ${d}일로 이동했습니다.`);
+        });
+        calDaysGrid.appendChild(cell);
+      }
+    }
+
+    function openCalendarModal() {
+      const modal = document.getElementById('calendarModal');
+      if (modal) {
+        const activePage = PAGES[currentPageIndex];
+        if (activePage) {
+          calViewMonth = activePage.monthNum;
+        }
+        renderCalendarGrid();
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeCalendarModal() {
+      const modal = document.getElementById('calendarModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    // --- SETUP CONTROLS & LISTENERS ---
+    function setupControls() {
+      // Prev & Next Page Chevron Buttons
+      const btnPrev = document.getElementById('btnPrevPage');
+      const btnNext = document.getElementById('btnNextPage');
+      if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+          if (currentPageIndex > 0) {
+            currentPageIndex--;
+            renderCurrentPage();
+          }
+        });
+      }
+      if (btnNext) {
+        btnNext.addEventListener('click', () => {
+          if (currentPageIndex < PAGES.length - 1) {
+            currentPageIndex++;
+            renderCurrentPage();
+          }
+        });
+      }
+
+      // Calendar icon button
+      const btnCalendarToggle = document.getElementById('btnCalendarToggle');
+      if (btnCalendarToggle) {
+        btnCalendarToggle.addEventListener('click', openCalendarModal);
+      }
+
+      // Close Calendar modal on backdrop click
+      const calModal = document.getElementById('calendarModal');
+      if (calModal) {
+        calModal.addEventListener('click', (e) => {
+          if (!e.target.closest('#calCard')) {
+            closeCalendarModal();
+          }
+        });
+      }
+
+      // Prev / Next Month in Calendar
+      const calPrevMonth = document.getElementById('calPrevMonth');
+      const calNextMonth = document.getElementById('calNextMonth');
+      if (calPrevMonth) {
+        calPrevMonth.addEventListener('click', () => {
+          calViewMonth--;
+          if (calViewMonth < 1) {
+            calViewMonth = 12;
+            calViewYear--;
+          }
+          renderCalendarGrid();
+        });
+      }
+      if (calNextMonth) {
+        calNextMonth.addEventListener('click', () => {
+          calViewMonth++;
+          if (calViewMonth > 12) {
+            calViewMonth = 1;
+            calViewYear++;
+          }
+          renderCalendarGrid();
+        });
+      }
+
+      // Today button (labeled 'today')
+      const btnToday = document.getElementById('btnToday');
+      if (btnToday) {
+        btnToday.addEventListener('click', () => {
+          jumpToDate(TODAY_MONTH, TODAY_DAY);
+          showToast(`today (${TODAY_MONTH}월 ${TODAY_DAY}일)로 이동했습니다.`);
+        });
+      }
+
+      // Lightbox Modal: click anywhere outside or inside to close!
+      const lightboxModal = document.getElementById('photoLightboxModal');
+      if (lightboxModal) {
+        lightboxModal.addEventListener('click', () => {
+          closeLightbox();
+        });
+      }
+
+      // Zoom photo preview click opens lightbox too
+      const zoomPhotoImg = document.getElementById('zoomPhotoImg');
+      if (zoomPhotoImg) {
+        zoomPhotoImg.addEventListener('click', () => {
+          if (zoomPhotoImg.src) openLightbox(zoomPhotoImg.src);
+        });
+      }
+
+      // Focus Zoom Modal buttons & typing
+      const zoomModal = document.getElementById('focusZoomModal');
+      const btnCloseZoomEl = document.getElementById('btnCloseZoomModal');
+      const btnDoneZoomEl = document.getElementById('btnDoneZoom');
+      const zoomTextareaEl = document.getElementById('zoomTextarea');
+
+      if (zoomModal) {
+        zoomModal.addEventListener('click', (e) => {
+          if (!e.target.closest('#zoomCard')) {
+            closeFocusZoom();
+          }
+        });
+      }
+      if (btnCloseZoomEl) btnCloseZoomEl.addEventListener('click', closeFocusZoom);
+      if (btnDoneZoomEl) btnDoneZoomEl.addEventListener('click', closeFocusZoom);
+      if (zoomTextareaEl) {
+        zoomTextareaEl.addEventListener('input', () => {
+          updateCharCount();
+          saveActiveZoomEntry();
+        });
+      }
+
+      // Photo upload file input handling with client-side compression
+      const photoInput = document.getElementById('photoFileInput');
+      if (photoInput) {
+        photoInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file || !activeZoomItem) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              let width = img.width;
+              let height = img.height;
+              const maxDim = 450;
+              if (width > height) {
+                if (width > maxDim) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                }
+              } else {
+                if (height > maxDim) {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.72);
+              const isDay = activeZoomItem.type === 'day';
+              const key = isDay ? `${activeZoomItem.monthNum}-${activeZoomItem.day}-${activeZoomYear}` : `${activeZoomItem.monthNum}-reviewphoto-${activeZoomYear}`;
+              diaryData.photos[key] = compressedBase64;
+              triggerSave();
+              updateZoomPhotoDisplay();
+              showToast('사진이 첨부되었습니다.');
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+          photoInput.value = '';
+        });
+      }
+
+      // Remove photo button
+      const btnRemovePhoto = document.getElementById('btnRemovePhoto');
+      if (btnRemovePhoto) {
+        btnRemovePhoto.addEventListener('click', () => {
+          if (!activeZoomItem) return;
+          const isDay = activeZoomItem.type === 'day';
+          const key = isDay ? `${activeZoomItem.monthNum}-${activeZoomItem.day}-${activeZoomYear}` : `${activeZoomItem.monthNum}-reviewphoto-${activeZoomYear}`;
+          delete diaryData.photos[key];
+          triggerSave();
+          updateZoomPhotoDisplay();
+          showToast('사진이 삭제되었습니다.');
+        });
+      }
+
+      // Backup modal controls
+      const backupModal = document.getElementById('backupModal');
+      const btnBackup = document.getElementById('btnBackup');
+      const btnCloseBackup = document.getElementById('btnCloseBackupModal');
+
+      if (btnBackup && backupModal) {
+        btnBackup.addEventListener('click', () => {
+          backupModal.classList.remove('hidden');
+        });
+      }
+      if (btnCloseBackup && backupModal) {
+        btnCloseBackup.addEventListener('click', () => {
+          backupModal.classList.add('hidden');
+        });
+      }
+
+      // Export JSON
+      const btnExport = document.getElementById('btnExportData');
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(diaryData, null, 2));
+          const dlAnchor = document.createElement('a');
+          dlAnchor.setAttribute('href', dataStr);
+          dlAnchor.setAttribute('download', `5year_diary_backup_${new Date().toISOString().slice(0, 10)}.json`);
+          document.body.appendChild(dlAnchor);
+          dlAnchor.click();
+          dlAnchor.remove();
+          showToast('다이어리 데이터가 다운로드되었습니다.');
+        });
+      }
+
+      // Import JSON
+      const fileInput = document.getElementById('importFileInput');
+      if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const imported = JSON.parse(event.target.result);
+              if (imported.entries) {
+                diaryData = imported;
+                if (!diaryData.photos) diaryData.photos = {};
+                triggerSave();
+                renderCurrentPage();
+                if (backupModal) backupModal.classList.add('hidden');
+                showToast('백업 파일이 성공적으로 복원되었습니다.');
+              } else {
+                showToast('올바른 다이어리 데이터 형식이 아닙니다.');
+              }
+            } catch (err) {
+              showToast('파일을 읽는 중 오류가 발생했습니다.');
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      // Clear Data
+      const btnClear = document.getElementById('btnClearData');
+      if (btnClear) {
+        btnClear.addEventListener('click', () => {
+          if (btnClear.getAttribute('data-confirm') === 'yes') {
+            diaryData = { entries: {}, photos: {} };
+            triggerSave();
+            renderCurrentPage();
+            if (backupModal) backupModal.classList.add('hidden');
+            showToast('다이어리 데이터가 초기화되었습니다.');
+            btnClear.removeAttribute('data-confirm');
+            btnClear.textContent = '다이어리 전체 내용 초기화';
+          } else {
+            btnClear.setAttribute('data-confirm', 'yes');
+            btnClear.textContent = '⚠️ 정말 초기화하시겠습니까? 한번 더 클릭하세요';
+            setTimeout(() => {
+              if (btnClear) {
+                btnClear.removeAttribute('data-confirm');
+                btnClear.textContent = '다이어리 전체 내용 초기화';
+              }
+            }, 4000);
+          }
+        });
+      }
+
+      // Window resize: auto responsive columns
+      window.addEventListener('resize', () => {
+        const newCols = getAutoColumns();
+        if (newCols !== columnsPerPage) {
+          const curPage = PAGES[currentPageIndex];
+          const activeMonth = curPage ? curPage.monthNum : TODAY_MONTH;
+          const activeDay = (curPage && curPage.pageType === 'daily' && curPage.items.length > 0) ? curPage.items[0].day : 1;
+
+          columnsPerPage = newCols;
+          rebuildPages();
+          jumpToDate(activeMonth, activeDay);
+        }
+      });
+
+      // Keyboard navigation
+      window.addEventListener('keydown', (e) => {
+        const lightboxModal = document.getElementById('photoLightboxModal');
+        if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+          if (e.key === 'Escape') closeLightbox();
+          return;
+        }
+
+        const zoomModal = document.getElementById('focusZoomModal');
+        if (zoomModal && !zoomModal.classList.contains('hidden')) {
+          if (e.key === 'Escape') closeFocusZoom();
+          return;
+        }
+
+        if (['TEXTAREA', 'INPUT'].includes(document.activeElement.tagName)) return;
+        if (e.key === 'ArrowLeft' && currentPageIndex > 0) {
+          currentPageIndex--;
+          renderCurrentPage();
+        } else if (e.key === 'ArrowRight' && currentPageIndex < PAGES.length - 1) {
+          currentPageIndex++;
+          renderCurrentPage();
+        }
+      });
+    }
+
+    // Initialization
+    window.onload = () => {
+      loadStorage();
+      rebuildPages();
+      setupControls();
+      jumpToDate(TODAY_MONTH, TODAY_DAY);
+    };
+  </script>
+</body>
+</html>
