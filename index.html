@@ -281,7 +281,7 @@
 
       <!-- Days of Week Header -->
       <div class="grid grid-cols-7 text-center text-[10.5px] text-stone-400 font-semibold mb-1.5">
-        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
       </div>
 
       <!-- Calendar Days Grid -->
@@ -891,7 +891,9 @@
       const mObj = MONTH_DATA.find(m => m.num === calViewMonth) || MONTH_DATA[0];
       calHeaderTitle.textContent = `${mObj.full.toUpperCase()} ${calViewYear}`;
 
-      const firstDayOfWeek = new Date(calViewYear, calViewMonth - 1, 1).getDay();
+      // Monday Start calculation: Sunday (0) becomes 6, Monday (1) becomes 0, etc.
+      const rawDay = new Date(calViewYear, calViewMonth - 1, 1).getDay();
+      const firstDayOfWeek = (rawDay + 6) % 7;
       calDaysGrid.innerHTML = '';
 
       // Blank slots before the 1st
