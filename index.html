@@ -36,6 +36,10 @@
       -webkit-user-select: none;
       overflow-x: hidden;
       font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding-top: max(1rem, env(safe-area-inset-top, 0px));
+      padding-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
     }
 
     /* Clean Pure White Paper Spread */
@@ -142,10 +146,10 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start pt-4 sm:pt-5 pb-5 px-3 sm:px-6 text-inkBlack">
+<body class="flex flex-col items-center justify-start px-3 sm:px-6 text-inkBlack">
 
   <!-- TOP HEADER TOOLBAR: Minimalist & Clean (Enhanced for mobile notch & vertical alignment) -->
-  <header class="w-full max-w-[1100px] flex items-center justify-between mb-3 px-1 text-xs font-futura shrink-0">
+  <header class="w-full max-w-[1100px] flex items-center justify-between mb-2.5 px-1 text-xs font-futura shrink-0">
     
     <!-- Top Left: Minimal Calendar Icon Button & Save status only -->
     <div class="flex items-center gap-2">
@@ -190,9 +194,9 @@
   </header>
 
   <!-- MAIN DIARY: PROPORTIONAL SPREAD WITH SAFE VERTICAL HEIGHT -->
-  <main class="w-full max-w-[1100px] flex-1 flex flex-col items-center min-h-0 select-none">
-    <div class="w-full h-full flex flex-col">
-      <div id="spreadContainer" class="clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]">
+  <main class="w-full max-w-[1100px] flex-1 flex flex-col items-center min-h-0 select-none pb-1">
+    <div class="w-full h-full flex flex-col flex-1">
+      <div id="spreadContainer" class="clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[560px] sm:min-h-[600px] h-full">
         <!-- Injected dynamically by JS -->
       </div>
     </div>
@@ -631,7 +635,7 @@
         const titleStr = `${page.monthShort.toUpperCase()} REVIEW`;
         if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
 
-        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-col overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]';
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-col overflow-hidden min-h-[560px] sm:min-h-[600px] h-full';
         spreadContainer.innerHTML = renderMonthlyReviewPage(page);
 
         wireReviewZoomTriggers(page);
@@ -645,7 +649,7 @@
 
         if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
 
-        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]';
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[560px] sm:min-h-[600px] h-full';
         
         const widthPercent = (100 / columnsPerPage).toFixed(3);
         let colsHtml = '';
