@@ -45,12 +45,20 @@
         0 4px 20px -2px rgba(0, 0, 0, 0.05),
         0 1px 3px rgba(0, 0, 0, 0.03);
       border: 1px solid #ECECEC;
+      touch-action: pan-y;
+      transition: transform 0.22s ease-out, opacity 0.22s ease-out;
     }
 
-    /* Minimal Textarea inside Column: Fills the entire right area */
+    /* Class while dragging */
+    .spread-dragging {
+      transition: none !important;
+      cursor: grabbing !important;
+    }
+
+    /* Minimal Textarea inside Column: Perfectly aligned with the top of the Year text */
     .spread-input {
       background: transparent;
-      line-height: 18px;
+      line-height: 14px;
       border: none;
       outline: none;
       resize: none;
@@ -64,6 +72,23 @@
     }
     .spread-input:focus {
       outline: none;
+    }
+
+    /* Multi-line clamp display box: ends naturally at the 4th line tail with clean ellipsis */
+    .spread-entry-preview {
+      width: 100%;
+      height: 100%;
+      line-height: 15px;
+      color: #212121;
+      font-size: 11px;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-all;
+      pointer-events: none;
+      font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
     }
 
     /* Focus Zoom Writing Textarea with 5 lines spacing */
@@ -117,10 +142,10 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start p-2 sm:p-4 text-inkBlack">
+<body class="min-h-screen flex flex-col items-center justify-start pt-4 sm:pt-5 pb-5 px-3 sm:px-6 text-inkBlack">
 
-  <!-- TOP HEADER TOOLBAR: Minimalist & Clean (No app name display) -->
-  <header class="w-full max-w-[1100px] flex items-center justify-between mb-2.5 px-1 text-xs font-futura shrink-0">
+  <!-- TOP HEADER TOOLBAR: Minimalist & Clean (Enhanced for mobile notch & vertical alignment) -->
+  <header class="w-full max-w-[1100px] flex items-center justify-between mb-3 px-1 text-xs font-futura shrink-0">
     
     <!-- Top Left: Minimal Calendar Icon Button & Save status only -->
     <div class="flex items-center gap-2">
@@ -133,55 +158,50 @@
           <line x1="3" y1="10" x2="21" y2="10" stroke-width="1.6"/>
         </svg>
       </button>
-      <span id="saveStatus" class="text-[10.5px] text-emerald-700 font-sans opacity-0 transition-opacity">저장됨</span>
+      <span id="saveStatus" class="text-[10px] text-emerald-700 font-sans opacity-0 transition-opacity">저장됨</span>
     </div>
 
-    <!-- Top Center: Current Page Dates & Bolder Darker Chevron Arrow Controls -->
-    <div class="flex items-center gap-2.5 font-futura tracking-tight">
+    <!-- Top Center: Current Page Dates Only (Page numbers removed, cleanly centered) -->
+    <div class="flex items-center gap-1.5 font-futura tracking-tight">
       <button id="btnPrevPage" title="이전 페이지" class="p-1.5 rounded-md hover:bg-stone-200/70 text-stone-950 transition flex items-center justify-center">
-        <svg class="w-4 h-4 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" d="M15 19l-7-7 7-7"/>
+        <svg class="w-3.5 h-3.5 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6" d="M15 19l-7-7 7-7"/>
         </svg>
       </button>
-      <div class="text-center select-none min-w-[140px]">
-        <span id="pageTitleDisplay" class="font-bold text-xs uppercase text-stone-950 tracking-wider">OCT 21 — OCT 22</span>
-        <span class="text-stone-300 mx-1 font-normal">•</span>
-        <span id="pageIndexDisplay" class="text-[11px] text-stone-500 font-normal">Page 148 / 183</span>
+      <div class="flex items-center justify-center text-center select-none min-w-[125px]">
+        <span id="pageTitleDisplay" class="font-bold text-[11.5px] uppercase text-stone-950 tracking-wider leading-none">OCT 21 — OCT 22</span>
       </div>
       <button id="btnNextPage" title="다음 페이지" class="p-1.5 rounded-md hover:bg-stone-200/70 text-stone-950 transition flex items-center justify-center">
-        <svg class="w-4 h-4 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" d="M9 5l7 7-7 7"/>
+        <svg class="w-3.5 h-3.5 text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.6" d="M9 5l7 7-7 7"/>
         </svg>
       </button>
     </div>
 
-    <!-- Top Right: today Button & Backup Modal -->
+    <!-- Top Right: Filled Black Circle Today Badge (10/21) & Backup Modal -->
     <div class="flex items-center gap-1.5">
-      <button id="btnToday" class="px-2.5 py-1 rounded-md text-stone-800 hover:text-stone-950 hover:bg-stone-200/60 font-medium text-xs lowercase transition">
-        today
+      <button id="btnToday" title="오늘 날짜로 이동" class="w-6 h-6 rounded-full bg-stone-900 text-white flex items-center justify-center hover:bg-stone-800 transition active:scale-95 shadow-xs shrink-0">
+        <span class="text-[8.5px] font-futura font-semibold tracking-tighter leading-none select-none">10/21</span>
       </button>
-      <button id="btnBackup" title="백업 및 다운로드" class="p-1.5 rounded-md hover:bg-stone-200/60 text-stone-700 transition">
+      <button id="btnBackup" title="백업 및 다운로드" class="p-1.5 rounded-md hover:bg-stone-200/60 text-stone-700 transition flex items-center justify-center">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- MAIN DIARY: FULLY PROPORTIONAL SPREAD (5개년 행 균등 분배) -->
-  <main class="w-full max-w-[1100px] flex-1 flex flex-col items-center min-h-0">
+  <!-- MAIN DIARY: PROPORTIONAL SPREAD WITH SAFE VERTICAL HEIGHT -->
+  <main class="w-full max-w-[1100px] flex-1 flex flex-col items-center min-h-0 select-none">
     <div class="w-full h-full flex flex-col">
-      <div id="spreadContainer" class="clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[580px] sm:min-h-[640px]">
+      <div id="spreadContainer" class="clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]">
         <!-- Injected dynamically by JS -->
       </div>
     </div>
   </main>
 
-  <!-- PHOTO LIGHTBOX MODAL (사진 크게 보기 팝업 - 빈 공간 터치 시 즉시 닫힘) -->
-  <div id="photoLightboxModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden cursor-pointer">
-    <div class="relative max-w-sm sm:max-w-md max-h-[85vh] p-2 bg-white rounded-2xl shadow-2xl flex flex-col items-center cursor-default" id="lightboxCard">
-      <img id="lightboxImg" src="" alt="사진 원본 보기" class="max-w-full max-h-[75vh] object-contain rounded-xl" />
-      <div class="mt-2 text-center text-xs text-stone-400 font-sans select-none">
-        바깥 빈 공간을 터치하면 닫힙니다
-      </div>
+  <!-- PHOTO LIGHTBOX MODAL (사진 크게 보기 팝업 - 테두리/문구 삭제, 빈 공간 터치 시 즉시 닫힘) -->
+  <div id="photoLightboxModal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-[2px] flex items-center justify-center p-3 hidden cursor-pointer">
+    <div class="relative max-w-sm sm:max-w-md max-h-[85vh] p-1 bg-white/95 rounded-xl shadow-2xl flex flex-col items-center cursor-default" id="lightboxCard">
+      <img id="lightboxImg" src="" alt="사진 원본 보기" class="max-w-full max-h-[80vh] object-contain rounded-lg" />
     </div>
   </div>
 
@@ -463,8 +483,8 @@
     }
 
     // Helper: Build a daily column
-    // Left: Year -> below Weekday -> below Photo slot
-    // Right: Entire remaining width for text!
+    // Left: Year -> below Weekday -> below Photo slot (clean, borderless)
+    // Right: Entire remaining width for text, perfectly aligned with Year top!
     function renderDailyColumn(item, colIndex, isLast, widthPercent) {
       if (!item) return `<div style="width: ${widthPercent}%;"></div>`;
 
@@ -475,11 +495,19 @@
         const entryVal = diaryData.entries[entryKey] || '';
         const photoVal = diaryData.photos[entryKey];
 
+        const photoHtml = photoVal ? `
+          <div class="mt-1.5 shrink-0 cursor-pointer" data-lightbox-photo="${photoVal}">
+            <img src="${photoVal}" alt="사진" class="w-7 h-7 sm:w-7.5 sm:h-7.5 object-cover rounded-sm hover:opacity-85 transition" title="클릭하여 사진 크게 보기" />
+          </div>
+        ` : `
+          <div class="mt-1.5 w-7 h-7"></div>
+        `;
+
         yearRowsHtml += `
           <div 
             data-zoom-col="${colIndex}"
             data-zoom-year="${year}"
-            class="flex-1 flex flex-row items-stretch py-2 sm:py-2.5 px-2 hover:bg-stone-50/70 transition cursor-pointer min-h-0 ${yIdx < YEARS.length - 1 ? 'border-b border-[#ECECEC]' : ''}"
+            class="flex-1 flex flex-row items-start py-1.5 sm:py-2 px-2 hover:bg-stone-50/70 transition cursor-pointer min-h-0 overflow-hidden ${yIdx < YEARS.length - 1 ? 'border-b border-[#ECECEC]' : ''}"
             title="클릭하여 확대 작성"
           >
             <!-- Left Column: Year on top, Weekday underneath (left-aligned), Photo box below -->
@@ -490,23 +518,15 @@
               <span class="text-[9.5px] font-futura text-stone-400 lowercase leading-none mt-1">${weekday}</span>
               
               <!-- Small photo slot below Year + Weekday -->
-              ${photoVal ? `
-                <div class="mt-2 shrink-0 cursor-pointer" data-lightbox-photo="${photoVal}">
-                  <img src="${photoVal}" alt="사진" class="w-7 h-7 sm:w-8 sm:h-8 object-cover rounded border border-stone-200 shadow-xs hover:opacity-85 transition" title="클릭하여 사진 크게 보기" />
-                </div>
-              ` : `
-                <div class="mt-2 w-7 h-7 sm:w-8 sm:h-8"></div>
-              `}
+              ${photoHtml}
             </div>
 
-            <!-- Right Column: Text Area filling all remaining space! -->
-            <div class="flex-1 min-w-0 h-full flex flex-col justify-start">
-              <textarea 
+            <!-- Right Column: Text Area filling all remaining space, perfectly aligned to Year top -->
+            <div class="flex-1 min-w-0 h-full flex flex-col justify-start pt-0 overflow-hidden">
+              <div 
                 data-entry-key="${entryKey}"
-                placeholder=""
-                class="spread-input flex-1 w-full h-full pointer-events-none"
-                tabindex="-1"
-              >${entryVal}</textarea>
+                class="spread-entry-preview"
+              >${entryVal}</div>
             </div>
           </div>
         `;
@@ -584,8 +604,8 @@
         <div class="w-full h-full p-4 sm:p-6 flex flex-col justify-between font-futura select-text">
           <!-- Top Area: Subtle, thin, reduced title on the top right with NO bottom line -->
           <div class="pb-1 mb-2 flex items-center justify-end shrink-0">
-            <span class="text-[9.5px] font-futura font-light text-stone-300 tracking-[0.2em] uppercase select-none">
-              ${monthShortUpper} REVIEW
+            <span class="text-[9.5px] font-futura font-light text-stone-300 tracking-[0.2em] lowercase select-none">
+              ${pageObj.monthShort} review
             </span>
           </div>
 
@@ -610,9 +630,8 @@
       if (page.pageType === 'review') {
         const titleStr = `${page.monthShort.toUpperCase()} REVIEW`;
         if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
-        if (pageIndexDisplay) pageIndexDisplay.textContent = `Review Page`;
 
-        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-col overflow-hidden min-h-[580px] sm:min-h-[640px]';
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-col overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]';
         spreadContainer.innerHTML = renderMonthlyReviewPage(page);
 
         wireReviewZoomTriggers(page);
@@ -625,9 +644,8 @@
         const titleStr = `${mShort} ${firstDay} — ${mShort} ${lastDay}`;
 
         if (pageTitleDisplay) pageTitleDisplay.textContent = titleStr;
-        if (pageIndexDisplay) pageIndexDisplay.textContent = `Page ${currentPageIndex + 1} / ${PAGES.length}`;
 
-        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[580px] sm:min-h-[640px]';
+        spreadContainer.className = 'clean-spread w-full flex-1 rounded-lg select-text flex flex-row overflow-hidden min-h-[520px] sm:min-h-[580px] max-h-[82vh]';
         
         const widthPercent = (100 / columnsPerPage).toFixed(3);
         let colsHtml = '';
@@ -1209,6 +1227,113 @@
               }
             }, 4000);
           }
+        });
+      }
+
+      // --- TOUCH & MOUSE SWIPE / DRAG FOR PAGE FLIPPING ---
+      const spreadEl = document.getElementById('spreadContainer');
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let currentDeltaX = 0;
+      let isHorizontalSwipe = null;
+
+      function onPointerStart(clientX, clientY) {
+        const zoomModal = document.getElementById('focusZoomModal');
+        const calModal = document.getElementById('calendarModal');
+        const lbModal = document.getElementById('photoLightboxModal');
+        if (
+          (zoomModal && !zoomModal.classList.contains('hidden')) ||
+          (calModal && !calModal.classList.contains('hidden')) ||
+          (lbModal && !lbModal.classList.contains('hidden'))
+        ) return;
+
+        isDragging = true;
+        startX = clientX;
+        startY = clientY;
+        currentDeltaX = 0;
+        isHorizontalSwipe = null;
+      }
+
+      function onPointerMove(clientX, clientY) {
+        if (!isDragging) return;
+        const diffX = clientX - startX;
+        const diffY = clientY - startY;
+
+        if (isHorizontalSwipe === null) {
+          if (Math.abs(diffX) > 8 || Math.abs(diffY) > 8) {
+            isHorizontalSwipe = Math.abs(diffX) > Math.abs(diffY);
+            if (isHorizontalSwipe && spreadEl) {
+              spreadEl.classList.add('spread-dragging');
+            }
+          }
+        }
+
+        if (isHorizontalSwipe) {
+          currentDeltaX = diffX;
+          // Apply gentle tilt and resistance drag
+          const resistance = 0.42;
+          const rotate = (diffX * 0.035).toFixed(2);
+          if (spreadEl) {
+            spreadEl.style.transform = `translateX(${diffX * resistance}px) rotateY(${rotate}deg)`;
+            spreadEl.style.opacity = `${Math.max(0.65, 1 - Math.abs(diffX) / 900)}`;
+          }
+        }
+      }
+
+      function onPointerEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+
+        if (spreadEl) {
+          spreadEl.classList.remove('spread-dragging');
+          spreadEl.style.transform = '';
+          spreadEl.style.opacity = '';
+        }
+
+        if (isHorizontalSwipe && Math.abs(currentDeltaX) > 45) {
+          if (currentDeltaX < -45 && currentPageIndex < PAGES.length - 1) {
+            currentPageIndex++;
+            renderCurrentPage();
+          } else if (currentDeltaX > 45 && currentPageIndex > 0) {
+            currentPageIndex--;
+            renderCurrentPage();
+          }
+        }
+        currentDeltaX = 0;
+        isHorizontalSwipe = null;
+      }
+
+      // Touch events (Mobile)
+      if (spreadEl) {
+        spreadEl.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            onPointerStart(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+          if (isDragging && e.touches.length === 1) {
+            onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+          onPointerEnd();
+        });
+
+        // Mouse events (Desktop)
+        spreadEl.addEventListener('mousedown', (e) => {
+          if (e.target.closest('[data-lightbox-photo]') || e.target.closest('button')) return;
+          onPointerStart(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (isDragging) onPointerMove(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => {
+          if (isDragging) onPointerEnd();
         });
       }
 
