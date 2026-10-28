@@ -98,22 +98,23 @@
     /* Focus Zoom Writing Textarea with 5 lines spacing */
     .zoom-textarea {
       background: transparent;
-      line-height: 34px;
+      line-height: 28px;
       border: none;
       outline: none;
       resize: none;
       width: 100%;
       color: #1F1F1F;
-      font-size: 14px;
+      font-size: 15px;
       padding: 0;
       margin: 0;
-      height: 170px;
-      min-height: 170px;
-      max-height: 170px;
-      background-image: linear-gradient(to bottom, transparent 33px, #ECE8DF 34px);
-      background-size: 100% 34px;
+      height: 140px;
+      min-height: 140px;
+      max-height: 140px;
+      background-image: linear-gradient(to bottom, transparent 27px, #ECE8DF 28px);
+      background-size: 100% 28px;
       background-repeat: repeat-y;
       font-family: 'Noto Sans KR', 'Jost', -apple-system, sans-serif;
+      caret-color: #1F1F1F;
     }
     .zoom-textarea:focus {
       outline: none;
@@ -182,10 +183,10 @@
       </button>
     </div>
 
-    <!-- Top Right: Filled Black Circle Today Badge (10/21) & Backup Modal -->
+    <!-- Top Right: Filled Black Circle Today Badge (Dynamic MM/DD) & Backup Modal -->
     <div class="flex items-center gap-1.5">
       <button id="btnToday" title="오늘 날짜로 이동" class="w-6 h-6 rounded-full bg-stone-900 text-white flex items-center justify-center hover:bg-stone-800 transition active:scale-95 shadow-xs shrink-0">
-        <span class="text-[8.5px] font-futura font-semibold tracking-tighter leading-none select-none">10/21</span>
+        <span id="btnTodayText" class="text-[8.5px] font-futura font-semibold tracking-tighter leading-none select-none">10/28</span>
       </button>
       <button id="btnBackup" title="백업 및 다운로드" class="p-1.5 rounded-md hover:bg-stone-200/60 text-stone-700 transition flex items-center justify-center">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
@@ -394,11 +395,11 @@
         });
       });
     }
-
-    // Today is October 21, 2026
-    const TODAY_YEAR = 2026;
-    const TODAY_MONTH = 10;
-    const TODAY_DAY = 21;
+    // Today calculation (Dynamic based on user device)
+    const now = new Date();
+    const TODAY_YEAR = now.getFullYear();
+    const TODAY_MONTH = now.getMonth() + 1;
+    const TODAY_DAY = now.getDate();
 
     let currentPageIndex = 0;
 
@@ -1045,12 +1046,16 @@
         });
       }
 
-      // Today button (labeled 'today')
+      // Today button (dynamic text and jump)
       const btnToday = document.getElementById('btnToday');
+      const btnTodayText = document.getElementById('btnTodayText');
+      if (btnTodayText) {
+        btnTodayText.textContent = `${String(TODAY_MONTH).padStart(2, '0')}/${String(TODAY_DAY).padStart(2, '0')}`;
+      }
       if (btnToday) {
         btnToday.addEventListener('click', () => {
           jumpToDate(TODAY_MONTH, TODAY_DAY);
-          showToast(`today (${TODAY_MONTH}월 ${TODAY_DAY}일)로 이동했습니다.`);
+          showToast(`오늘 (${TODAY_MONTH}월 ${TODAY_DAY}일)로 이동했습니다.`);
         });
       }
 
@@ -1387,6 +1392,7 @@
       loadStorage();
       rebuildPages();
       setupControls();
+      // Jump to actual today's date on load
       jumpToDate(TODAY_MONTH, TODAY_DAY);
     };
   </script>
